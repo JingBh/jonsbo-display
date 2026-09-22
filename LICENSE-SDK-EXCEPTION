@@ -1,0 +1,17 @@
+Jonsbo SDK linking exception
+
+Additional permission under GNU GPL version 3 section 7
+
+For the original code in this repository bearing this exception notice,
+the licensors grant additional permission to link or combine that code with
+the unmodified MSDISPLAYSDKWRRAPER.dll provided by JONSBO-AIO and its required
+vendor runtime libraries, and to convey the resulting work.
+
+This permission does not extend to other proprietary libraries, does not
+relicense the vendor libraries, and does not grant any right to redistribute
+them. You must obtain the vendor software separately and comply with its
+applicable terms. All other obligations of GPL version 3 remain in force
+for the covered code, including providing its Corresponding Source.
+
+This exception applies only to code whose licensors grant it. It does not
+change the licenses of Lucide icons or any other third-party material.
