@@ -45,12 +45,14 @@ void SystemTelemetry::Run(std::stop_token stop) {
     GetSystemTimes(&ni, &nk, &nu);
     uint64_t total = Ticks(nk) - Ticks(kernel) + Ticks(nu) - Ticks(user);
     double percent = total ? 100. * (total - (Ticks(ni) - Ticks(idle))) / total : 0;
+    const auto temperature = temperatures.Read();
     s.cpu = Fixed(percent) + L"%";
-    s.cpuDetail = L"温度不可用";
+    s.cpuDetail = temperature.cpu ? Fixed(*temperature.cpu) + L"℃" : L"—℃";
     MEMORYSTATUSEX ram{sizeof(ram)};
     if (GlobalMemoryStatusEx(&ram))
-      s.cpuDetail =
-          L"—℃  ·  " + Fixed(double(ram.ullTotalPhys - ram.ullAvailPhys) / 1e9, 1) + L" GB";
+      s.cpuDetail +=
+          L"  ·  " + Fixed(double(ram.ullTotalPhys - ram.ullAvailPhys) / 1e9, 1) + L" GB";
+    s.gpuDetail = temperature.gpu ? Fixed(*temperature.gpu) + L"℃" : L"—℃";
     if (query && PdhCollectQueryData(query) == ERROR_SUCCESS) {
       std::map<std::wstring, double> totals;
       for (const auto& [name, v] : values(engines)) {
@@ -72,7 +74,7 @@ void SystemTelemetry::Run(std::stop_token stop) {
         double bytes = 0;
         for (const auto& [_, v] : memoryValues)
           bytes += v;
-        s.gpuDetail = L"—℃  ·  " + Fixed(bytes / 1e9, 1) + L" GB";
+        s.gpuDetail += L"  ·  " + Fixed(bytes / 1e9, 1) + L" GB";
       }
     }
     std::move(s.cpuHistory.begin() + 1, s.cpuHistory.end(), s.cpuHistory.begin());

@@ -23,6 +23,7 @@ int wmain(int argc, wchar_t** argv) {
     BOOL animations = TRUE;
     SystemParametersInfoW(SPI_GETCLIENTAREAANIMATION, 0, &animations, 0);
     o.reduced = !animations;
+    bool checkHardwareMonitor = false;
     for (int i = 1; i < argc; ++i) {
       std::wstring arg = argv[i];
       if (arg == L"--usb")
@@ -31,6 +32,8 @@ int wmain(int argc, wchar_t** argv) {
         o.usb = false;
       else if (arg == L"--check-integrations")
         o.checkIntegrations = true;
+      else if (arg == L"--check-hardware-monitor")
+        checkHardwareMonitor = true;
       else if (arg == L"--reduced-motion")
         o.reduced = true;
       else if (arg == L"--tab" && i + 1 < argc) {
@@ -47,13 +50,16 @@ int wmain(int argc, wchar_t** argv) {
       else if (arg == L"--help") {
         std::cout
             << "jonsbo-display [--no-usb] [--tab monitor|home|codex|music|video] [--seconds N] "
-               "[--reduced-motion] [--config PATH] [--check-integrations]\n";
+               "[--reduced-motion] [--config PATH] [--check-integrations] "
+               "[--check-hardware-monitor]\n";
         return 0;
       } else
         throw std::runtime_error("Unknown or incomplete argument");
     }
     if (o.checkIntegrations)
       return CheckIntegrations(o.config);
+    if (checkHardwareMonitor)
+      return CheckHardwareMonitor();
     if (select) {
       HWND existing = FindWindowW(kWindowClass, nullptr);
       if (!existing)

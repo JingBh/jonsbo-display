@@ -11,5 +11,6 @@ struct ApplicationOptions {
 };
 int RunApplication(ApplicationOptions options);
 int CheckIntegrations(const std::filesystem::path& config);
+int CheckHardwareMonitor();
 
 }  // namespace jonsbo

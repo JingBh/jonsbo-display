@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Additional permission: see LICENSE-SDK-EXCEPTION.
 #include "app/application.hpp"
+#include "integrations/hardware_monitor.hpp"
 #include "integrations/home_assistant.hpp"
 
 namespace jonsbo {
@@ -30,5 +31,21 @@ int CheckIntegrations(const std::filesystem::path& config) {
   }
   std::cerr << "Home Assistant: connection check failed\n";
   return 1;
+}
+
+int CheckHardwareMonitor() {
+  HardwareMonitor monitor;
+  const auto temperature = monitor.Read();
+  std::cout << "CPU temperature: ";
+  if (temperature.cpu)
+    std::cout << *temperature.cpu << " C\n";
+  else
+    std::cout << "unavailable\n";
+  std::cout << "GPU temperature: ";
+  if (temperature.gpu)
+    std::cout << *temperature.gpu << " C\n";
+  else
+    std::cout << "unavailable\n";
+  return temperature.cpu && temperature.gpu ? 0 : 2;
 }
 }  // namespace jonsbo

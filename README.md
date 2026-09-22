@@ -50,7 +50,11 @@ floor_heating=climate.bedroom_heating
 HA 只读实体状态；令牌通过 `--ha-token-stdin 主机名` 从标准输入写入 Windows
 凭据管理器，不要放进 INI、命令行参数或 Git。Codex 使用本机现有登录读取额度。
 
-CPU/GPU 温度暂不支持；画中画需先打开浏览器已有的小窗。
+CPU/GPU 温度由可选的 C++/CLI 桥接 DLL 调用 `LibreHardwareMonitorLib` 读取；
+构建时若能找到 NuGet，会自动恢复依赖。桥接目标为 .NET Framework 4.7.2，
+不要求安装 .NET SDK。部分 CPU 传感器需要单独安装 PawnIO 驱动并以管理员权限读取；
+缺少桥接 DLL、驱动或传感器权限时显示 `—℃`，不影响其余功能。画中画需先打开
+浏览器已有的小窗。
 桌面层级适配 Windows 桌面及 Aura 壁纸，不保证兼容所有壁纸软件。
 不支持登录前服务模式；项目不会自动修改开机启动项。
 
@@ -64,4 +68,7 @@ CPU/GPU 温度暂不支持；画中画需先打开浏览器已有的小窗。
 仅保留实际使用的 [Lucide](https://github.com/lucide-icons/lucide) SVG，
 版本 `951813ce76a859d4d8b145366972cbb237147a4e`；
 ISC / 部分 Feather 衍生图标 MIT，完整声明见 [assets/lucide/LICENSE](assets/lucide/LICENSE)。
+可选温度桥接使用
+[LibreHardwareMonitorLib 0.9.6](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor)，
+遵循 MPL-2.0；其依赖项保留各自许可证。
 Noto 字体由用户单独安装；Windows SDK/运行库遵循各自许可。本项目不使用 FFmpeg。

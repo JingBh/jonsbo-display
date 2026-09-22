@@ -4,6 +4,7 @@
 #include "core/dashboard_state.hpp"
 #include "integrations/codex_client.hpp"
 #include "integrations/codex_executable.hpp"
+#include "integrations/hardware_monitor.hpp"
 #include <iphlpapi.h>
 #include <pdh.h>
 #include <pdhmsg.h>
@@ -26,6 +27,7 @@ class SystemTelemetry {
   std::mutex mutex;
   DashboardState state;
   std::unique_ptr<CodexLimits> limits;
+  HardwareMonitor temperatures;
   std::jthread worker;
 };
 
