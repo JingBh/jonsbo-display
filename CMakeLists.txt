@@ -17,6 +17,7 @@ add_library(
   src/app/desktop_panel.cpp
   src/device/display_session.cpp
   src/device/display_transport.cpp
+  src/device/numeric_panel.cpp
   src/integrations/codex_client.cpp
   src/integrations/codex_executable.cpp
   src/integrations/home_assistant.cpp
@@ -55,6 +56,7 @@ target_link_libraries(
          dwmapi
          winhttp
          advapi32)
+target_link_libraries(jonsbo_core PUBLIC hid setupapi)
 
 add_executable(
   jonsbo-display WIN32 src/main.cpp src/app/application.cpp

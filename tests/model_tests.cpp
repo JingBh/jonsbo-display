@@ -2,6 +2,7 @@
 // Additional permission: see LICENSE-SDK-EXCEPTION.
 #include "app/desktop_panel.hpp"
 #include "core/utilities.hpp"
+#include "device/numeric_panel.hpp"
 #include "integrations/codex_client.hpp"
 #include "integrations/home_assistant.hpp"
 #include "rendering/media_playhead.hpp"
@@ -87,6 +88,24 @@ int ModelTests() {
   require(LightColor(Json::Parse(LR"({"rgb_color":[0,0,0]})")) == 0, "black RGB is valid");
   require(LightColor(Json::Parse(LR"({"rgb_color":[1],"color_temp_kelvin":null})")) == 0xe6cfae,
           "invalid color fallback");
+  SYSTEMTIME time{};
+  time.wYear = 2026;
+  time.wMonth = 9;
+  time.wDay = 22;
+  time.wHour = 23;
+  time.wMinute = 7;
+  time.wSecond = 5;
+  time.wDayOfWeek = 2;
+  auto numeric = EncodeNumericPanelReport({37.6f, 64.375f, 49.5f, 5545.f}, time);
+  require(numeric[0] == 0 && numeric[1] == 1 && numeric[2] == 2, "numeric panel header");
+  require(numeric[3] == 64 && numeric[4] == 38 && numeric[5] == 0 && numeric[6] == 38,
+          "numeric panel CPU values");
+  require(numeric[9] == 55 && numeric[10] == 45, "numeric panel CPU frequency");
+  require(numeric[13] == 49 && numeric[14] == 50 && numeric[15] == 0,
+          "numeric panel GPU temperature");
+  require(numeric[25] == 20 && numeric[26] == 26 && numeric[27] == 9 && numeric[28] == 22 &&
+              numeric[29] == 23 && numeric[30] == 7 && numeric[31] == 5 && numeric[32] == 2,
+          "numeric panel clock");
   std::cout << "Model tests passed: remaining, weekly-only, monthly-only, smooth seek, quota "
                "transitions, adaptive bit rates, curtain thresholds, light colors\n";
   return 0;

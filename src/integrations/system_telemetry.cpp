@@ -10,12 +10,28 @@ DashboardState SystemTelemetry::Read() {
 
 void SystemTelemetry::Run(std::stop_token stop) {
   PDH_HQUERY query = nullptr;
-  PDH_HCOUNTER engines = nullptr, memory = nullptr;
+  PDH_HCOUNTER engines = nullptr, memory = nullptr, cpuUtility = nullptr, cpuFrequency = nullptr,
+               cpuPerformance = nullptr;
   if (PdhOpenQueryW(nullptr, 0, &query) == ERROR_SUCCESS) {
     PdhAddEnglishCounterW(query, L"\\GPU Engine(*)\\Utilization Percentage", 0, &engines);
     PdhAddEnglishCounterW(query, L"\\GPU Adapter Memory(*)\\Dedicated Usage", 0, &memory);
+    PdhAddEnglishCounterW(query, L"\\Processor Information(_Total)\\% Processor Utility", 0,
+                          &cpuUtility);
+    PdhAddEnglishCounterW(query, L"\\Processor Information(_Total)\\Processor Frequency", 0,
+                          &cpuFrequency);
+    PdhAddEnglishCounterW(query, L"\\Processor Information(_Total)\\% Processor Performance", 0,
+                          &cpuPerformance);
     PdhCollectQueryData(query);
   }
+  auto single = [](PDH_HCOUNTER counter) -> std::optional<double> {
+    if (!counter)
+      return {};
+    PDH_FMT_COUNTERVALUE value{};
+    if (PdhGetFormattedCounterValue(counter, PDH_FMT_DOUBLE, nullptr, &value) != ERROR_SUCCESS ||
+        (value.CStatus != PDH_CSTATUS_VALID_DATA && value.CStatus != PDH_CSTATUS_NEW_DATA))
+      return {};
+    return value.doubleValue;
+  };
   auto values = [](PDH_HCOUNTER counter) {
     std::map<std::wstring, double> values;
     if (!counter)
@@ -45,7 +61,24 @@ void SystemTelemetry::Run(std::stop_token stop) {
     GetSystemTimes(&ni, &nk, &nu);
     uint64_t total = Ticks(nk) - Ticks(kernel) + Ticks(nu) - Ticks(user);
     double percent = total ? 100. * (total - (Ticks(ni) - Ticks(idle))) / total : 0;
+    const bool sampled = query && PdhCollectQueryData(query) == ERROR_SUCCESS;
+    if (sampled)
+      if (const auto utility = single(cpuUtility))
+        percent = *utility;
+    percent = std::clamp(percent, 0., 100.);
     const auto temperature = temperatures.Read();
+    s.cpuPercent = float(percent);
+    s.cpuTemperature = temperature.cpu;
+    s.gpuTemperature = temperature.gpu;
+    s.cpuFrequencyMhz.reset();
+    if (sampled) {
+      const auto frequency = single(cpuFrequency);
+      const auto performance = single(cpuPerformance);
+      if (frequency && performance && *frequency > 0 && *performance > 0)
+        s.cpuFrequencyMhz = float(*frequency * *performance / 100.);
+      else if (frequency && *frequency > 0)
+        s.cpuFrequencyMhz = float(*frequency);
+    }
     s.cpu = Fixed(percent) + L"%";
     s.cpuDetail = temperature.cpu ? Fixed(*temperature.cpu) + L"℃" : L"—℃";
     MEMORYSTATUSEX ram{sizeof(ram)};
@@ -53,7 +86,7 @@ void SystemTelemetry::Run(std::stop_token stop) {
       s.cpuDetail +=
           L"  ·  " + Fixed(double(ram.ullTotalPhys - ram.ullAvailPhys) / 1e9, 1) + L" GB";
     s.gpuDetail = temperature.gpu ? Fixed(*temperature.gpu) + L"℃" : L"—℃";
-    if (query && PdhCollectQueryData(query) == ERROR_SUCCESS) {
+    if (sampled) {
       std::map<std::wstring, double> totals;
       for (const auto& [name, v] : values(engines)) {
         auto start = name.find(L"luid_");

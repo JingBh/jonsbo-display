@@ -7,6 +7,10 @@ namespace jonsbo {
 struct DashboardState {
   std::wstring cpu = L"—", cpuDetail = L"采集中…", gpu = L"—", gpuDetail = L"未连接";
   std::wstring disk = L"—", diskDetail = L"采集中…", download = L"—", upload = L"—";
+  float cpuPercent = 0;
+  std::optional<float> cpuTemperature;
+  std::optional<float> gpuTemperature;
+  std::optional<float> cpuFrequencyMhz;
   struct Quota {
     std::wstring title, reset;
     double remaining = 0;

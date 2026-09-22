@@ -4,6 +4,7 @@
 #include "app/desktop_panel.hpp"
 #include "core/dashboard_state.hpp"
 #include "device/display_transport.hpp"
+#include "device/numeric_panel.hpp"
 #include "integrations/home_assistant.hpp"
 #include "integrations/system_media.hpp"
 #include "integrations/system_telemetry.hpp"
@@ -113,6 +114,7 @@ class Application {
       if (a->options.usb && Seconds(a->lastUsbRestart) > 2) {
         a->lastUsbRestart = Clock::now();
         a->transport.Restart();
+        a->numericPanel.Restart();
         a->dirty = true;
       }
       return TRUE;
@@ -166,6 +168,7 @@ class Application {
     std::cout << "Control ready\n" << std::flush;
     if (options.usb) {
       transport.Start();
+      numericPanel.Start();
       renderer->QueueReadback();
     }
     auto nextSample = Clock::now() + std::chrono::seconds(1), nextMedia = Clock::now(),
@@ -214,6 +217,8 @@ class Application {
       }
       if (now >= nextSample) {
         state = telemetry.Read();
+        numericPanel.Update(
+            {state.cpuPercent, state.cpuTemperature, state.gpuTemperature, state.cpuFrequencyMhz});
         renderer->SetHome(homeAssistant.Read());
         if (active <= 2) {
           renderer->DrawPage(active, state);
@@ -267,6 +272,12 @@ class Application {
       if (options.usb && renderer->ReadLatest(frame))
         transport.Submit(frame);
       auto error = transport.Status();
+      const auto numericError = numericPanel.Status();
+      if (!numericError.empty()) {
+        if (!error.empty())
+          error += L"; ";
+        error += numericError;
+      }
       if (!error.empty() && error != lastError) {
         lastError = error;
         std::wcerr << error << L"\n";
@@ -283,7 +294,7 @@ class Application {
     }
     std::cout << "Rendered frames: " << renderer->rendered
               << "; USB accepted: " << transport.accepted << "; USB other: " << transport.rejected
-              << "\n";
+              << "; numeric accepted: " << numericPanel.accepted << "\n";
     return options.usb && (!transport.Status().empty() || transport.accepted == 0) ? 2 : 0;
   }
 
@@ -299,6 +310,7 @@ class Application {
   SystemMedia systemMedia;
   HomeAssistant homeAssistant;
   DisplayTransport transport;
+  NumericPanelTransport numericPanel;
   std::unique_ptr<ScreenRenderer> renderer;
 };
 

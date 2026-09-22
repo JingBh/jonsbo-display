@@ -2,7 +2,8 @@
 
 Windows x64 的 Jonsbo 480×480 水冷屏控制程序。C++20 / Direct2D / DirectComposition；
 支持系统状态、Home Assistant、Codex 剩余额度、系统媒体与浏览器画中画捕获。
-桌面控制面板支持 DPI 缩放、半透明按钮和退出确认。
+同时通过原生 HID 驱动 `5131:2007` 数码监控屏，显示时间、CPU/GPU 温度、
+CPU 使用率和动态频率。桌面控制面板支持 DPI 缩放、半透明按钮和退出确认。
 
 ## 构建与运行
 
