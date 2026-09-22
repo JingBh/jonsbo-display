@@ -1,10 +1,10 @@
-# SPDX-License-Identifier: GPL-3.0-only
-# Additional permission: see LICENSE-SDK-EXCEPTION.
+# SPDX-License-Identifier: GPL-3.0-only Additional permission: see
+# LICENSE-SDK-EXCEPTION.
 cmake_minimum_required(VERSION 3.24)
 project(
   JonsboDisplay
   VERSION 0.2.0
-  LANGUAGES CXX)
+  LANGUAGES CXX RC)
 if(NOT WIN32
    OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8
    OR NOT MSVC)
@@ -55,19 +55,17 @@ target_link_libraries(
          winhttp
          advapi32)
 
-add_executable(jonsbo-display WIN32 src/main.cpp src/app/application.cpp
-                                    src/app/diagnostics.cpp)
+add_executable(
+  jonsbo-display WIN32 src/main.cpp src/app/application.cpp
+                       src/app/diagnostics.cpp src/resources/assets.rc)
 target_link_libraries(jonsbo-display PRIVATE jonsbo_core)
 target_link_options(jonsbo-display PRIVATE /ENTRY:wmainCRTStartup)
-add_custom_command(
-  TARGET jonsbo-display
-  POST_BUILD
-  COMMAND
-    ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/assets"
-    "$<TARGET_FILE_DIR:jonsbo-display>/assets")
 install(TARGETS jonsbo-display RUNTIME DESTINATION .)
-install(DIRECTORY assets DESTINATION .)
 install(FILES LICENSE LICENSE-SDK-EXCEPTION DESTINATION .)
+install(
+  FILES assets/lucide/LICENSE
+  DESTINATION licenses
+  RENAME Lucide-LICENSE)
 
 include(CTest)
 if(BUILD_TESTING)

@@ -18,7 +18,6 @@ int wmain(int argc, wchar_t** argv) {
       return ok ? 0 : 1;
     }
     ApplicationOptions o;
-    o.assets = ExeDir() / L"assets";
     o.config = ExeDir() / L"jonsbo-display.ini";
     bool select = false;
     BOOL animations = TRUE;
@@ -28,6 +27,8 @@ int wmain(int argc, wchar_t** argv) {
       std::wstring arg = argv[i];
       if (arg == L"--usb")
         o.usb = true;
+      else if (arg == L"--no-usb")
+        o.usb = false;
       else if (arg == L"--check-integrations")
         o.checkIntegrations = true;
       else if (arg == L"--reduced-motion")
@@ -44,8 +45,9 @@ int wmain(int argc, wchar_t** argv) {
       else if (arg == L"--config" && i + 1 < argc)
         o.config = std::filesystem::absolute(argv[++i]);
       else if (arg == L"--help") {
-        std::cout << "jonsbo-display [--usb] [--tab monitor|home|codex|music|video] [--seconds N] "
-                     "[--reduced-motion] [--config PATH] [--check-integrations]\n";
+        std::cout
+            << "jonsbo-display [--no-usb] [--tab monitor|home|codex|music|video] [--seconds N] "
+               "[--reduced-motion] [--config PATH] [--check-integrations]\n";
         return 0;
       } else
         throw std::runtime_error("Unknown or incomplete argument");

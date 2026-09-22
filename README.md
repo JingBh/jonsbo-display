@@ -15,12 +15,13 @@ CMake 3.24+。字体使用系统安装的 Noto Sans CJK SC；仓库不附带字�
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ctest --test-dir build --output-on-failure
-.\build\jonsbo-display.exe --usb
+.\build\jonsbo-display.exe
 ```
 
 USB 输出需要单独安装 JONSBO-AIO 及其驱动，并退出官方程序。
 运行时从 `%LOCALAPPDATA%/JONSBO-AIO/dll/x64/` 加载厂商 DLL；仓库不包含它们。
-不加 `--usb` 仅运行桌面面板。用 `--tab monitor|home|codex|music|video` 切页；
+程序默认输出到 USB；`--no-usb` 仅运行桌面面板。Lucide 图标资源编译进 EXE，
+运行时不依赖外部 assets 目录。用 `--tab monitor|home|codex|music|video` 切页；
 正常退出会记忆当前页。`--reduced-motion` 关闭动画，`--seconds N` 限时运行。
 `--check-integrations` 可在不启动界面和 USB 输出的情况下检查本地集成。
 

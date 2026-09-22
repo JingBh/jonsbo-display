@@ -3,8 +3,7 @@
 #include "rendering/screen_renderer.hpp"
 
 namespace jonsbo {
-ScreenRenderer::ScreenRenderer(HWND window, const std::filesystem::path& assets)
-    : hwnd(window), assetRoot(assets) {
+ScreenRenderer::ScreenRenderer(HWND window) : hwnd(window) {
   UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
   D3D_FEATURE_LEVEL level;
   Check(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, flags, nullptr, 0,

@@ -8,6 +8,7 @@ namespace jonsbo {
 class DisplayTransport {
  public:
   void Start();
+  void Restart();
   void Submit(const Frame& frame);
   std::wstring Status();
   std::atomic<uint64_t> accepted{0}, rejected{0};

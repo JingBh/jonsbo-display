@@ -1,17 +1,55 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Additional permission: see LICENSE-SDK-EXCEPTION.
 #include "rendering/screen_renderer.hpp"
+#include "resources/resource_ids.h"
 
 namespace jonsbo {
+namespace {
+int LucideResourceId(std::wstring_view name) {
+  static constexpr std::pair<std::wstring_view, int> resources[] = {
+      {L"air-vent", IDR_LUCIDE_AIR_VENT},
+      {L"blinds", IDR_LUCIDE_BLINDS},
+      {L"circle-question-mark", IDR_LUCIDE_QUESTION},
+      {L"code-xml", IDR_LUCIDE_CODE},
+      {L"cpu", IDR_LUCIDE_CPU},
+      {L"droplets", IDR_LUCIDE_DROPLETS},
+      {L"gpu", IDR_LUCIDE_GPU},
+      {L"hard-drive", IDR_LUCIDE_HARD_DRIVE},
+      {L"heater", IDR_LUCIDE_HEATER},
+      {L"house", IDR_LUCIDE_HOUSE},
+      {L"lamp-ceiling", IDR_LUCIDE_LAMP},
+      {L"monitor", IDR_LUCIDE_MONITOR},
+      {L"music-2", IDR_LUCIDE_MUSIC},
+      {L"network", IDR_LUCIDE_NETWORK},
+      {L"picture-in-picture-2", IDR_LUCIDE_PIP},
+      {L"power", IDR_LUCIDE_POWER},
+      {L"rectangle-ellipsis", IDR_LUCIDE_ELLIPSIS},
+      {L"thermometer", IDR_LUCIDE_THERMOMETER},
+      {L"tube-lotion", IDR_LUCIDE_TUBE},
+  };
+  auto found = std::find_if(std::begin(resources), std::end(resources),
+                            [name](const auto& item) { return item.first == name; });
+  return found == std::end(resources) ? 0 : found->second;
+}
+}  // namespace
+
 void ScreenRenderer::Icon(const std::wstring& name, float x, float y, float size, unsigned color,
                           float opacity, bool sheer, float rotation) {
   const std::wstring key = name + L"/" + std::to_wstring(color) + (sheer ? L"/sheer" : L"");
   auto found = lucide.find(key);
   if (found == lucide.end()) {
-    std::ifstream input(assetRoot / L"lucide" / (name + L".svg"), std::ios::binary);
-    if (!input)
+    const int resourceId = LucideResourceId(name);
+    HMODULE module = GetModuleHandleW(nullptr);
+    HRSRC resource =
+        resourceId ? FindResourceW(module, MAKEINTRESOURCEW(resourceId), RT_RCDATA) : nullptr;
+    if (!resource)
       throw std::runtime_error("Missing Lucide asset: " + ToUtf8(name));
-    std::string source((std::istreambuf_iterator<char>(input)), {});
+    HGLOBAL loaded = LoadResource(module, resource);
+    const void* bytes = loaded ? LockResource(loaded) : nullptr;
+    const DWORD byteCount = SizeofResource(module, resource);
+    if (!bytes || byteCount == 0)
+      throw std::runtime_error("Invalid Lucide asset: " + ToUtf8(name));
+    std::string source(static_cast<const char*>(bytes), byteCount);
     char hex[10];
     sprintf_s(hex, "#%06x", color);
     size_t at = 0;

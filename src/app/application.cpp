@@ -109,9 +109,18 @@ class Application {
       a->controlDirty = true;
       return 0;
     }
+    if (msg == WM_POWERBROADCAST && (wp == PBT_APMRESUMEAUTOMATIC || wp == PBT_APMRESUMESUSPEND)) {
+      if (a->options.usb && Seconds(a->lastUsbRestart) > 2) {
+        a->lastUsbRestart = Clock::now();
+        a->transport.Restart();
+        a->dirty = true;
+      }
+      return TRUE;
+    }
     if (msg == WM_CLOSE) {
       if (MessageBoxW(w, L"确定退出小屏幕程序？退出后将停止向屏幕输出。", L"退出小屏幕",
-                      MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)
+                      MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2 | MB_TOPMOST | MB_SETFOREGROUND) ==
+          IDYES)
         DestroyWindow(w);
       return 0;
     }
@@ -141,7 +150,7 @@ class Application {
       BOOL dark = TRUE;
       DwmSetWindowAttribute(window, DWMWA_USE_IMMERSIVE_DARK_MODE, &dark, sizeof(dark));
     }
-    renderer = std::make_unique<ScreenRenderer>(window, options.assets);
+    renderer = std::make_unique<ScreenRenderer>(window);
     renderer->SetReducedMotion(options.reduced);
     DashboardState state = telemetry.Read();
     auto media = systemMedia.Read();
@@ -284,6 +293,7 @@ class Application {
   float marker, startMarker = 0, direction = 0;
   bool animating = false, dirty = true, controlDirty = true;
   Clock::time_point transitionStart;
+  Clock::time_point lastUsbRestart;
   HWND window = nullptr;
   SystemTelemetry telemetry;
   SystemMedia systemMedia;

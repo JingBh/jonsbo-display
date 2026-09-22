@@ -13,7 +13,7 @@
 namespace jonsbo {
 class ScreenRenderer {
  public:
-  ScreenRenderer(HWND window, const std::filesystem::path& assets);
+  explicit ScreenRenderer(HWND window);
   Surface CreateSurface();
   void SetMedia(const MediaState& value);
   static std::wstring Duration(double seconds);
@@ -68,7 +68,6 @@ class ScreenRenderer {
   ComPtr<ID2D1Bitmap1> windowTarget;
   ComPtr<IDXGISwapChain> swap;
   ComPtr<ID2D1StrokeStyle> stroke;
-  std::filesystem::path assetRoot;
   ComPtr<ID2D1DeviceContext5> svgContext;
   std::map<std::wstring, ComPtr<ID2D1SvgDocument>> lucide;
   std::map<std::wstring, ComPtr<IDWriteTextLayout>> layouts;

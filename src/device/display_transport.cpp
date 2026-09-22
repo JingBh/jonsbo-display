@@ -64,6 +64,17 @@ void DisplayTransport::Start() {
   });
 }
 
+void DisplayTransport::Restart() {
+  worker.request_stop();
+  if (worker.joinable())
+    worker.join();
+  {
+    std::lock_guard lock(mutex);
+    status.clear();
+  }
+  Start();
+}
+
 void DisplayTransport::Submit(const Frame& frame) {
   std::lock_guard lock(mutex);
   std::memcpy(latest.data(), frame.data(), 480 * 480 * 4);

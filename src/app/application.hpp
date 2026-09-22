@@ -5,9 +5,9 @@
 
 namespace jonsbo {
 struct ApplicationOptions {
-  bool usb = false, reduced = false, checkIntegrations = false;
+  bool usb = true, reduced = false, checkIntegrations = false;
   int tab = 3, seconds = 0;
-  std::filesystem::path assets, config;
+  std::filesystem::path config;
 };
 int RunApplication(ApplicationOptions options);
 int CheckIntegrations(const std::filesystem::path& config);
