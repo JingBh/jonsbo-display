@@ -6,6 +6,7 @@
 #include "device/display_transport.hpp"
 #include "device/numeric_panel.hpp"
 #include "integrations/home_assistant.hpp"
+#include "integrations/homepod_media.hpp"
 #include "integrations/system_media.hpp"
 #include "integrations/system_telemetry.hpp"
 #include "rendering/screen_renderer.hpp"
@@ -28,6 +29,7 @@ class Application {
     startMarker = marker;
     direction = tab > marker ? 1.f : -1.f;
     active = tab;
+    homePod.SetActive(active == 3 && !systemMedia.Read().playing);
     renderer->DrawPage(active, telemetry.Read());
     transitionStart = Clock::now();
     animating = !options.reduced;
@@ -155,7 +157,9 @@ class Application {
     renderer = std::make_unique<ScreenRenderer>(window);
     renderer->SetReducedMotion(options.reduced);
     DashboardState state = telemetry.Read();
-    auto media = systemMedia.Read();
+    auto localMedia = systemMedia.Read();
+    homePod.SetActive(active == 3 && !localMedia.playing);
+    auto media = SelectMedia(localMedia, homePod.Read());
     renderer->SetMedia(media);
     renderer->SetHome(homeAssistant.Read());
     auto started = Clock::now();
@@ -204,7 +208,7 @@ class Application {
         nextDesktop = now + std::chrono::seconds(1);
       }
       if (now >= nextPip) {
-        int change = renderer->DetectPictureInPicture();
+        int change = renderer->DetectPictureInPicture(pipDiscovery.Read());
         if (change > 0) {
           std::cout << "PiP capture started\n" << std::flush;
           beforePip = active;
@@ -229,9 +233,12 @@ class Application {
         nextSample = now + std::chrono::seconds(1);
       }
       if (now >= nextMedia) {
-        auto latest = systemMedia.Read();
+        localMedia = systemMedia.Read();
+        homePod.SetActive(active == 3 && !localMedia.playing);
+        auto latest = SelectMedia(localMedia, homePod.Read());
         bool changed = latest.revision != media.revision || latest.title != media.title ||
-                       latest.artist != media.artist || latest.playing != media.playing;
+                       latest.artist != media.artist || latest.playing != media.playing ||
+                       latest.identity != media.identity || latest.artwork != media.artwork;
         media = latest;
         renderer->SetMedia(media);
         if (active == 3 && changed) {
@@ -308,6 +315,8 @@ class Application {
   HWND window = nullptr;
   SystemTelemetry telemetry;
   SystemMedia systemMedia;
+  HomePodMedia homePod;
+  PictureInPictureDiscovery pipDiscovery;
   HomeAssistant homeAssistant;
   DisplayTransport transport;
   NumericPanelTransport numericPanel;

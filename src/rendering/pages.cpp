@@ -123,6 +123,16 @@ void ScreenRenderer::DrawPage(int tab, const DashboardState& s) {
         ctx->PushLayer(layer, nullptr);
         ctx->DrawImage(mediaBlur.Get(), D2D1::Point2F(0, 0));
         ctx->PopLayer();
+      } else if (media.homepod) {
+        D2D1_GRADIENT_STOP stops[] = {{0, Color(0x53638b, .40f)},
+                                     {1, Color(0x53638b, 0)}};
+        ComPtr<ID2D1GradientStopCollection> collection;
+        Check(ctx->CreateGradientStopCollection(stops, 2, &collection));
+        ComPtr<ID2D1RadialGradientBrush> glow;
+        Check(ctx->CreateRadialGradientBrush(
+            D2D1::RadialGradientBrushProperties({195, 165}, {0, 0}, 315, 280),
+            collection.Get(), &glow));
+        ctx->FillRectangle(D2D1::RectF(0, 56, 480, 480), glow.Get());
       }
       Gradient(D2D1::RectF(0, 56, 480, 480),
                {{0, Color(0x191b23, .2f)}, {.55f, Color(0x191b23, 0)}, {1, Color(0x181b25, .85f)}},
@@ -147,6 +157,21 @@ void ScreenRenderer::DrawPage(int tab, const DashboardState& s) {
                         D2D1::RectF((size.width - side) / 2, (size.height - side) / 2,
                                     (size.width + side) / 2, (size.height + side) / 2));
       });
+    } else if (media.homepod) {
+      Round(120, 92, 240, 232, 20, 0x080b13, .28f);
+      ClipRound(D2D1::RectF(124, 84, 356, 316), 18, [&] {
+        Gradient(D2D1::RectF(124, 84, 356, 316),
+                 {{0, Color(0x355472)}, {.52f, Color(0x55436f)}, {1, Color(0x242e4a)}},
+                 {124, 84}, {356, 316});
+      });
+      // Original HomePod mini silhouette in space gray.
+      Round(174, 137, 132, 130, 45, 0x0d1529, .28f);
+      Round(180, 127, 120, 130, 41, 0x393b42);
+      brush->SetColor(Color(0x171b25, .9f));
+      ctx->FillEllipse(D2D1::Ellipse({240, 146}, 47, 14), brush.Get());
+      brush->SetColor(Color(0x66718b, .38f));
+      ctx->FillEllipse(D2D1::Ellipse({240, 143}, 27, 7), brush.Get());
+      Round(205, 256, 70, 5, 2.5f, 0x161b34, .32f);
     } else
       Round(124, 84, 232, 232, 18, 0x282a34);
     brush->SetColor(Color(0xffffff, .188f));

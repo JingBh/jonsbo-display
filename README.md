@@ -2,6 +2,8 @@
 
 Windows x64 的 Jonsbo 480×480 水冷屏控制程序。C++20 / Direct2D / DirectComposition；
 支持系统状态、Home Assistant、Codex 剩余额度、系统媒体与浏览器画中画捕获。
+媒体页优先显示电脑正在播放的内容；电脑未播放时会查询同一网络的 HomePod，
+只显示其正在播放的曲目。封面不可获取时使用 HomePod 占位图。
 同时通过原生 HID 驱动 `5131:2007` 数码监控屏，显示时间、CPU/GPU 温度、
 CPU 使用率和动态频率。桌面控制面板支持 DPI 缩放、半透明按钮和退出确认。
 
@@ -25,6 +27,9 @@ USB 输出需要单独安装 JONSBO-AIO 及其驱动，并退出官方程序。
 运行时不依赖外部 assets 目录。用 `--tab monitor|home|codex|music|video` 切页；
 正常退出会记忆当前页。`--reduced-motion` 关闭动画，`--seconds N` 限时运行。
 `--check-integrations` 可在不启动界面和 USB 输出的情况下检查本地集成。
+HomePod 查询优先使用 `PATH` 中的 `atvremote`；若不存在，则使用
+`uvx --python 3.13 --from pyatv atvremote`。程序不执行额外安装步骤。
+各页面的数据查询在后台进行，切页动画读取最近一次结果。
 
 ## 本地配置
 

@@ -22,7 +22,8 @@ class PictureInPicture {
   ~PictureInPicture() {
     Stop();
   }
-  int Detect();
+  static HWND FindWindow();
+  int Detect(HWND found);
   bool Read(ID3D11DeviceContext* context, ComPtr<ID3D11Texture2D>& texture, D2D1_RECT_F& source);
   bool Active() const;
   const std::wstring& Error() const;
@@ -38,6 +39,22 @@ class PictureInPicture {
   winrt::Windows::Graphics::Capture::Direct3D11CaptureFramePool pool{nullptr};
   winrt::Windows::Graphics::Capture::GraphicsCaptureSession session{nullptr};
   winrt::Windows::Graphics::SizeInt32 size{};
+};
+
+class PictureInPictureDiscovery {
+ public:
+  PictureInPictureDiscovery() : worker([this](std::stop_token stop) {
+    while (!stop.stop_requested()) {
+      window.store(PictureInPicture::FindWindow());
+      for (int i = 0; i < 10 && !stop.stop_requested(); ++i)
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
+  }) {}
+  HWND Read() const { return window.load(); }
+
+ private:
+  std::atomic<HWND> window = nullptr;
+  std::jthread worker;
 };
 
 }  // namespace jonsbo

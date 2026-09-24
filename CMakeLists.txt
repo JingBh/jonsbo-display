@@ -21,6 +21,7 @@ add_library(
   src/integrations/codex_client.cpp
   src/integrations/codex_executable.cpp
   src/integrations/home_assistant.cpp
+  src/integrations/homepod_media.cpp
   src/integrations/hardware_monitor.cpp
   src/integrations/picture_in_picture.cpp
   src/integrations/system_media.cpp

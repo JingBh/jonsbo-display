@@ -11,6 +11,7 @@ void ScreenRenderer::SetMedia(const MediaState& value) {
     return;
   artworkBytes = media.artwork;
   mediaArt.Reset();
+  mediaBlur.Reset();
   if (!artworkBytes || artworkBytes->empty())
     return;
   try {
@@ -73,8 +74,8 @@ void ScreenRenderer::UpdateMusicProgress() {
   Check(ctx->EndDraw());
 }
 
-int ScreenRenderer::DetectPictureInPicture() {
-  auto result = pip->Detect();
+int ScreenRenderer::DetectPictureInPicture(HWND found) {
+  auto result = pip->Detect(found);
   if (result != 0)
     pipBitmap.Reset();
   return result;

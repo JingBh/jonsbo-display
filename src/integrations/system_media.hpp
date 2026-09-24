@@ -10,11 +10,19 @@ struct MediaState {
   std::wstring title = L"暂无播放内容", artist = L"等待播放器提供媒体信息", identity;
   std::shared_ptr<std::vector<uint8_t>> artwork;
   bool playing = false;
+  bool available = false, homepod = false;
   double position = 0, duration = 0, rate = 1;
   Clock::time_point sampled = Clock::now();
   uint64_t revision = 0;
   double Position() const;
 };
+inline MediaState SelectMedia(const MediaState& local, const MediaState& homepod) {
+  if (local.playing)
+    return local;
+  if (homepod.playing)
+    return homepod;
+  return {};
+}
 class SystemMedia {
  public:
   explicit SystemMedia(bool enabled) {

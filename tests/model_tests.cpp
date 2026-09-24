@@ -5,6 +5,7 @@
 #include "device/numeric_panel.hpp"
 #include "integrations/codex_client.hpp"
 #include "integrations/home_assistant.hpp"
+#include "integrations/homepod_media.hpp"
 #include "rendering/media_playhead.hpp"
 #include "rendering/quota_animation.hpp"
 namespace jonsbo {
@@ -29,6 +30,16 @@ int ModelTests() {
     if (!test)
       throw std::runtime_error(message);
   };
+  MediaState local, pod;
+  local.playing = true;
+  local.title = L"电脑";
+  pod.playing = true;
+  pod.title = L"HomePod";
+  require(SelectMedia(local, pod).title == L"电脑", "local playback priority");
+  local.playing = false;
+  require(SelectMedia(local, pod).title == L"HomePod", "HomePod fallback");
+  pod.playing = false;
+  require(!SelectMedia(local, pod).playing, "paused media hidden");
   using Json = winrt::Windows::Data::Json::JsonObject;
   auto parse = [](const wchar_t* text) { return CodexLimits::Parse(Json::Parse(text)); };
   auto two = parse(
@@ -111,9 +122,24 @@ int ModelTests() {
   return 0;
 }
 }  // namespace jonsbo
-int main() {
+int main(int argc, char** argv) {
   try {
     jonsbo::Check(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED));
+    if (argc == 2 && std::string(argv[1]) == "--live-homepod") {
+      jonsbo::HomePodMedia pod;
+      pod.SetActive(true);
+      for (int i = 0; i < 100; ++i) {
+        auto media = pod.Read();
+        if (media.playing) {
+          std::wcout << L"HomePod: " << media.title << L" / " << media.artist << L" / "
+                     << media.position << L"/" << media.duration << L" artwork="
+                     << (media.artwork ? media.artwork->size() : 0) << L"\n";
+          return 0;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+      }
+      throw std::runtime_error("HomePod playback not found");
+    }
     return jonsbo::ModelTests();
   } catch (const std::exception& e) {
     std::cerr << e.what() << "\n";

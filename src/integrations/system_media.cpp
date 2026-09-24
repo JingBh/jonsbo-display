@@ -70,6 +70,7 @@ void SystemMedia::Run(std::stop_token stop) {
           auto playback = session.GetPlaybackInfo();
           next.playing = playback.PlaybackStatus() ==
                          GlobalSystemMediaTransportControlsSessionPlaybackStatus::Playing;
+          next.available = true;
           auto rate = playback.PlaybackRate();
           next.rate = rate ? rate.Value() : 1.;
           if (!std::isfinite(next.rate))

@@ -3,7 +3,7 @@
 #include "integrations/picture_in_picture.hpp"
 
 namespace jonsbo {
-int PictureInPicture::Detect() {
+HWND PictureInPicture::FindWindow() {
   HWND found = nullptr;
   EnumWindows(
       [](HWND w, LPARAM data) -> BOOL {
@@ -37,6 +37,12 @@ int PictureInPicture::Detect() {
         return TRUE;
       },
       reinterpret_cast<LPARAM>(&found));
+  return found;
+}
+
+int PictureInPicture::Detect(HWND found) {
+  if (found && !IsWindow(found))
+    found = nullptr;
   if (found == window)
     return 0;
   bool was = window != nullptr;

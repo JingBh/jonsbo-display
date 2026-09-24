@@ -19,7 +19,7 @@ class ScreenRenderer {
   static std::wstring Duration(double seconds);
   void MusicProgress();
   void UpdateMusicProgress();
-  int DetectPictureInPicture();
+  int DetectPictureInPicture(HWND found);
   bool UpdatePictureInPicture();
   bool HasPictureInPicture() const;
   void SetHome(const HomeState& value);
